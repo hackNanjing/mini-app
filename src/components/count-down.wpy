@@ -5,6 +5,12 @@
     margin-bottom: 36px;
     z-index:9999;
   }
+  .font-white {
+    color: #fff;
+  }
+  .font-black {
+    color: #333;
+  }
   .count {
     font-size: 18px;
     font-weight: bold;
@@ -21,43 +27,78 @@
   }
   .mode-container {
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5)
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    
+    .counter {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%); 
+    }
+
+     .close-button {
+      width: 48rpx;
+      height: 48rpx;
+      position: fixed;
+      top: 36rpx;
+      right: 36rpx;
+    }
   }
 </style>
 
 <template>
-  <view class="counter {{style}}">
+  <view class="counter font-black" wx:if="{{!isStarted}}">
     <text>{{time.hour}}:</text>
     <text>{{time.minute}}:</text>
     <text>{{time.second}}</text>
   </view>
-  <view class="mode-container" wx:if="{{isStarted}}"></view>
-  <view class="action-button {{style}}" @tap.default="start">
+  <view class="mode-container" wx:if="{{isStarted}}">
+    <image src="http://i1.piimg.com/588926/dfdeb88f1ac462a5.png" mode="scaleToFill" class="close-button" @tap.default="close"></image>
+    <view class="counter font-white">
+      <text>{{time.hour}}:</text>
+      <text>{{time.minute}}:</text>
+      <text>{{time.second}}</text>
+    </view>
+  </view>
+  <view class="action-button {{style}}" @tap.default="start" wx:if="{{!isStarted}}">
     <text>Start</text>
   </view>
 </template>
 
 <script>
   import wepy from 'wepy'
+  const DEFAULT_TIME = {
+    hour: 0,
+    minute: 30,
+    second: 0
+  }
 
   export default class Counter extends wepy.component {
     data = {
-      time: {
-        hour: 0,
-        minute: 30,
-        second: 0
-      },
-      style: {
-
-      },
+      time: JSON.parse(JSON.stringify(DEFAULT_TIME)),
+      timeoutID: null,
       isStarted: false,
       excess: '00 : 00 : 00'
     }
 
     methods = {
       start() {
-        wepy.setStorage({ key: 'startAt', data: new Date().getTime() })
-        this.countDown()
+        wepy.setStorage({ key: 'startAt', data: new Date().getTime() });
+        this.isStarted = true;
+        this.countDown();
+      },
+      close() {
+        this.isStarted = false;
+        this.time = JSON.parse(JSON.stringify(DEFAULT_TIME));
+        clearTimeout(this.timeoutID);
+        this.$apply();
+
+        wepy.request({
+          url: `${BASE_URL}/v1/users/end`,
+          method: 'POST',
+          data: postData
+        });
       }
     }
 
@@ -104,7 +145,7 @@
 
       this.$apply()
 
-      setTimeout(() => {
+      this.timeoutID = setTimeout(() => {
         this.countDown()
       }, 1000)
     }
