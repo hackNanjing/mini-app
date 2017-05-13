@@ -1113,12 +1113,12 @@ export default class extends wepy.app {
         wechat: userInfo,
         location: [longitude, latitude]
       }
-      const { token } = await wepy.request({
+      const { data: tokenData } = await wepy.request({
         url: `${BASE_URL}/v1/users/login`,
         method: 'POST',
         data: postData
       });
-      userInfo.token = token;
+      userInfo.token = tokenData.token;
       app.globalData.userInfo = userInfo
 
       return userInfo
