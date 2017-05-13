@@ -1,0 +1,37 @@
+<style lang="less">
+  .action-button {
+    width: 270px;
+    height: 55px;
+    color: #fff;
+    background-color: #28d526;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+</style>
+
+<template>
+  <view class="action-button {{style}}" @tap.default="start">
+    <text>{{text}}</text>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class ActionButton extends wepy.component {
+    props = {
+      text: String,
+    }
+    
+    methods = {
+      start() {
+        this.$invoke('countDown', 'start');
+      }
+    }
+    onLoad() {
+      console.log('action-button');
+    }
+  }
+</script>

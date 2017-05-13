@@ -23,7 +23,7 @@
 
 <script>
   import wepy from 'wepy'
-  import CountDown from '../components/count-down'
+  import countDown from '../components/count-down'
 
   export default class Index extends wepy.page {
     config = {
@@ -31,7 +31,7 @@
     }
 
     components = {
-      countDown: CountDown
+      countDown
     }
 
     onLoad() {
