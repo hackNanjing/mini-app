@@ -13,17 +13,33 @@
 import wepy from 'wepy'
 import 'wepy-async-function'
 
+import { BASE_URL } from './constants'
+
 export default class extends wepy.app {
   config = {
     pages: [
-      'pages/index'
+      'pages/index',
+      'pages/recommend',
+      'pages/personal'
     ],
     window: {
       backgroundTextStyle: 'light',
       navigationBarBackgroundColor: '#fff',
       navigationBarTitleText: 'WeChat',
       navigationBarTextStyle: 'black'
-    }
+    },
+    tabBar: {
+       list: [{
+         pagePath: 'pages/index',
+         text: 'Home'
+       }, {
+         pagePath: 'pages/recommend',
+         text: 'Recommend',
+       },{
+         pagePath: 'pages/personal',
+         text: 'Personal',
+       }]
+     },
   }
 
   globalData = {
@@ -52,17 +68,25 @@ export default class extends wepy.app {
     console.log(data)
   }
 
-  getUserInfo(cb) {
-    const that = this
-    if (this.globalData.userInfo) {
-      return this.globalData.userInfo
+  async getUserInfo() {
+    const app = this.$app
+    if (app.globalData.userInfo) {
+      return app.globalData.userInfo
     }
-    wepy.getUserInfo({
-      success (res) {
-        that.globalData.userInfo = res.userInfo
-        cb && cb(res.userInfo)
-      }
-    })
+    try {
+      const { code } = await wepy.login()
+      const { data } = await wepy.request({
+        url: `${BASE_URL}/usertas/openid?code=${code}`
+      })
+
+      const { userInfo } = await wepy.getUserInfo()
+      userInfo.openid = data.openid
+      app.globalData.userInfo = userInfo
+
+      return userInfo
+    } catch (e) {
+      console.log(e)
+    }
   }
 }
 </script>
