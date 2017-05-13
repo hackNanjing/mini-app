@@ -84,32 +84,30 @@
   }
 </style>
 <template>
-  <view class="container">
-    <view class="user-info">
-      <view><image class="image" mode="aspectFill" src="http://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eo12pYxS8icicRcEGqknlUoLZBDtSJKmjCGYxQQz0rYsC0vUV74dmOQPicVtmWk0oPVTLMicVy6vXExiaA/0"></image></view>
-      <view>用户名</view>
-    </view>
+  <view class="user-info">
+    <view><image class="image" mode="aspectFill" src="{{user.avatarUrl}}"></image></view>
+    <view>{{user.nickName}}</view>
+  </view>
 
-    <view class="info">
-      <view class="view">总分:{{profile.total}}</view>
-      <view class="view">排名:{{profile.rank}}</view>
-    </view>
+  <view class="info">
+    <view class="view">总分:{{profile.total}}</view>
+    <navigator url="./rank" open-type="redirect" class="view">排名:{{profile.rank}}</navigator>
+  </view>
 
-    <view class="history-title">
-      History
-    </view>
+  <view class="history-title">
+    History
+  </view>
 
-    <view class="history-list">
-      <view class="item" wx:for="{{history}}">
-        <view class="time-view">
-          <view class="m">{{item.success_total}}</view>
-          <view class="h">{{item.startAt}}-{{item.endAt}}</view>
-        </view>
-        <view class="status">
-          <icon type="success" size="20"/>
-        </view>
-        <view class="line"></view>
+  <view class="history-list">
+    <view class="item" wx:for="{{history}}">
+      <view class="time-view">
+        <view class="m">{{item.success_total}}</view>
+        <view class="h">{{item.startAt}}-{{item.endAt}}</view>
       </view>
+      <view class="status">
+        <icon type="success" size="20"/>
+      </view>
+      <view class="line"></view>
     </view>
   </view>
 </template>
@@ -128,7 +126,8 @@ export default class Index extends wepy.page {
       profile: {
         rank: 0,
         total: 0
-      }
+      },
+      user: {}
     }
 
     async onLoad() {
@@ -149,6 +148,7 @@ export default class Index extends wepy.page {
         }
       })
 
+      this.user = user
       this.history = history
       this.profile = profile
       this.$apply()
