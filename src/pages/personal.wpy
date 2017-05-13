@@ -133,19 +133,19 @@ export default class Index extends wepy.page {
 
     async onLoad() {
       const user = await this.$wxapp.getUserInfo()
-      const profile = await wepy.request({
+      const {data: profile} = await wepy.request({
         method: 'GET',
         url: `${BASE_URL}/v1/users/profile`,
-        headers: {
-          auth: user._id
+        header: {
+          auth: user.token
         }
       })
 
-      const history = await wepy.request({
+      const {data: history} = await wepy.request({
         method: 'GET',
         url: `${BASE_URL}/v1/users/history`,
-        headers: {
-          auth: user._id
+        header: {
+          auth: user.token
         }
       })
 
