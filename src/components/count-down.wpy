@@ -1,0 +1,80 @@
+<style lang="less">
+  .counter {
+    text-align: left;
+    font-size: 12px;
+  }
+  .count {
+    font-size: 18px;
+    font-weight: bold;
+  }
+</style>
+<template>
+  <view class="counter {{style}}">
+    <text>{{time.hour}}:</text>
+    <text>{{time.minute}}:</text>
+    <text>{{time.second}}</text>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  // import abc from 'abc'
+
+  export default class Counter extends wepy.component {
+    data = {
+      time: {
+        hour: 1,
+        minute: 30,
+        second: 50
+      },
+      excess: '00 : 00 : 00'
+    }
+
+    onLoad() {
+      this.countDown()
+    }
+
+    countDown() {
+      let { time, excess } = this.data
+      if (typeof time === 'undefined') return
+
+      let hour = parseInt(time.hour)
+      let minute = parseInt(time.minute)
+      let second = parseInt(time.second)
+
+      switch (true) {
+        case second > 0:
+          second--
+          break
+
+        case minute > 0:
+          minute--
+          second = 59
+          break
+
+        case hour > 0:
+          hour--
+          minute = 59
+          break
+      }
+
+      const currentHour = hour < 10 ? `0${hour}` : hour
+      const currentMinute = minute < 10 ? `0${minute}` : minute
+      const currentSecond = second < 10 ? `0${second}` : second
+
+      excess = `${currentHour} : ${currentMinute} : ${currentSecond}`
+
+      this.time = {
+        hour,
+        minute,
+        second
+      }
+      this.excess = excess
+
+      this.$apply()
+
+      setTimeout(() => {
+        this.countDown()
+      }, 1000)
+    }
+  }
+</script>

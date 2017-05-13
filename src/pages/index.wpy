@@ -17,16 +17,21 @@
 </style>
 <template>
   <view class="container">
-    index
+    <countDown></countDown>
   </view>
 </template>
 
 <script>
   import wepy from 'wepy'
+  import CountDown from '../components/count-down'
 
   export default class Index extends wepy.page {
     config = {
       navigationBarTitleText: 'Home'
+    }
+
+    components = {
+      countDown: CountDown
     }
 
     onLoad() {
