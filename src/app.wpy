@@ -55,16 +55,11 @@ export default class extends wepy.app {
   constructor () {
     super()
     this.use('requestfix')
+    this.use('promisify')
   }
 
-  onLaunch() {
-    this.testAsync()
-  }
-
-
-  async testAsync () {
-    const data = await this.sleep(3)
-    console.log(data)
+  async onLaunch() {
+    await this.getUserInfo();
   }
 
   async getUserInfo() {
@@ -74,12 +69,23 @@ export default class extends wepy.app {
     }
     try {
       const { code } = await wepy.login()
+      console.log('code:', code);
       const { data } = await wepy.request({
-        url: `${BASE_URL}/usertas/openid?code=${code}`
+        url: `${BASE_URL}/v1/auth?code=${code}`
       })
-
       const { userInfo } = await wepy.getUserInfo()
       userInfo.openid = data.openid
+      const { latitude, longitude } = await wepy.getLocation();
+      const postData = {
+        wechat: userInfo,
+        location: [longitude, latitude]
+      }
+      const { token } = await wepy.request({
+        url: `${BASE_URL}/v1/users/login`,
+        method: 'POST',
+        data: postData
+      });
+      userInfo.token = token;
       app.globalData.userInfo = userInfo
 
       return userInfo
