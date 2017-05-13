@@ -68,6 +68,9 @@
 
 <script>
   import wepy from 'wepy'
+  import { BASE_URL } from '../constants'
+  import { generateMinutes } from '../utils';
+
   const DEFAULT_TIME = {
     hour: 0,
     minute: 30,
@@ -85,6 +88,7 @@
     methods = {
       start() {
         wepy.setStorage({ key: 'startAt', data: new Date().getTime() });
+        wepy.setStorage({ key: 'total_minute', data: generateMinutes(this.time) });
         this.isStarted = true;
         this.countDown();
       },
@@ -92,20 +96,24 @@
         this.isStarted = false;
         this.time = JSON.parse(JSON.stringify(DEFAULT_TIME));
         clearTimeout(this.timeoutID);
-        this.$apply();
-        
+        const startAt = wepy.getStorageSync('startAt');
+        const total_minute = wepy.getStorageSync('total_minute');
         const postData = {
-          
+          startAt,
+          total_minute,
+          success_minute: total_minute - generateMinutes(this.time)
         };
         const user = await this.$wxapp.getUserInfo();
-        await wepy.request({
+        let { now, before_rank } = await wepy.request({
           url: `${BASE_URL}/v1/users/end`,
           method: 'POST',
           data: postData,
           header: {
-            auth: user._id
+            auth: user.token
           }
         });
+        console.log(now, before_rank);
+        this.$apply();
       }
     }
 
