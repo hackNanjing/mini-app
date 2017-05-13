@@ -88,16 +88,23 @@
         this.isStarted = true;
         this.countDown();
       },
-      close() {
+      async close() {
         this.isStarted = false;
         this.time = JSON.parse(JSON.stringify(DEFAULT_TIME));
         clearTimeout(this.timeoutID);
         this.$apply();
-
-        wepy.request({
+        
+        const postData = {
+          
+        };
+        const user = await this.$wxapp.getUserInfo();
+        await wepy.request({
           url: `${BASE_URL}/v1/users/end`,
           method: 'POST',
-          data: postData
+          data: postData,
+          header: {
+            auth: user._id
+          }
         });
       }
     }
