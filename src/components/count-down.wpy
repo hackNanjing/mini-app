@@ -1,7 +1,7 @@
 <style lang="less">
   .counter {
     text-align: center;
-    font-size: 60px;
+    font-size: 54px;
     width: 270px;
     margin-bottom: 36px;
     z-index:9999;
@@ -13,7 +13,7 @@
     color: #333;
   }
   .count {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
   }
   .action-button {
@@ -27,23 +27,26 @@
     border-radius: 4px;
   }
   .mode-container {
-    height: 100vh;
+    position: absolute;
+    height: 1300rpx;
     width: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    
+    top:0;
+    left:0;
+
     .counter {
-      position: fixed;
+      position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%,-50%); 
+      transform: translate(-50%,-50%);
     }
 
      .close-button {
       width: 48rpx;
       height: 48rpx;
-      position: fixed;
-      top: 36rpx;
-      right: 36rpx;
+      position: absolute;
+      top: 40rpx;
+      right: 0;
     }
   }
 </style>
@@ -51,17 +54,13 @@
 <template>
   <view class="counter font-black" wx:if="{{!isStarted}}">
     <picker mode="time" start="0:10" end="04:00" @change.stop="bindTimeChange">
-      <text>{{time.hour}}:</text>
-      <text>{{time.minute}}:</text>
-      <text>{{time.second}}</text>
+      <text>{{excess}}</text>
     </picker>
   </view>
   <view class="mode-container" wx:if="{{isStarted}}">
   <view @tap.stop="close"><image src="http://i1.piimg.com/588926/dfdeb88f1ac462a5.png" mode="scaleToFill" class="close-button" ></image></view>
     <view class="counter font-white">
-      <text>{{time.hour}}:</text>
-      <text>{{time.minute}}:</text>
-      <text>{{time.second}}</text>
+      <text>{{excess}}</text>
     </view>
   </view>
   <view class="action-button {{style}}" @tap.default="start" wx:if="{{!isStarted}}">
@@ -72,9 +71,9 @@
 <script>
   import wepy from 'wepy'
   import { BASE_URL } from '../constants'
-  import { generateMinutes } from '../utils';
+  import { generateMinutes } from '../utils'
 
-  const DEFAULT_TIME = {
+const DEFAULT_TIME = {
     hour: 0,
     minute: 30,
     second: 0
@@ -85,40 +84,36 @@
       time: JSON.parse(JSON.stringify(DEFAULT_TIME)),
       timeoutID: null,
       isStarted: false,
-      excess: '00 : 00 : 00',
+      excess: '00 : 00 : 00'
     }
 
     methods = {
       start() {
-        wepy.setStorage({ key: 'startAt', data: new Date().getTime() });
-        wepy.setStorage({ key: 'total_minute', data: generateMinutes(this.time) });
-        this.isStarted = true;
-        this.countDown();
+        wepy.setStorage({ key: 'startAt', data: new Date().getTime() })
+        wepy.setStorage({ key: 'total_minute', data: generateMinutes(this.time) })
+        this.isStarted = true
+        this.countDown()
       },
       bindTimeChange(event) {
-        console.log('detail:', event.detail);
-        let range = event.detail.value.split(':');
+        let range = event.detail.value.split(':')
         this.time = {
           hour: range[0],
           minute: range[1],
           second: 0
         }
-        console.log(event.detail, this.timeFormat);
       },
       async close() {
-        this.isStarted = false;
-        console.log('close test')
-        clearTimeout(this.timeoutID);
-        const startAt = wx.getStorageSync('startAt');
-        const total_minute = wx.getStorageSync('total_minute');
-        let success_minute = total_minute - generateMinutes(this.time);
-        console.log('success_minute', total_minute - generateMinutes(this.time))
+        this.isStarted = false
+        clearTimeout(this.timeoutID)
+        const startAt = wx.getStorageSync('startAt')
+        const total_minute = wx.getStorageSync('total_minute')
+        let success_minute = total_minute - generateMinutes(this.time)
         const postData = {
           startAt,
           total_minute,
           success_minute
-        };
-        const user = await this.$wxapp.getUserInfo();
+        }
+        const user = await this.$wxapp.getUserInfo()
         const { data: profile } = await wepy.request({
           url: `${BASE_URL}/v1/users/end`,
           method: 'POST',
@@ -126,12 +121,16 @@
           header: {
             auth: user.token
           }
-        });
+        })
 
-        console.log('success_minute', success_minute, profile)
-        if (profile.now && profile.before_rank) wepy.navigateTo({url: `/pages/status?now=${profile.now}&before=${profile.before_rank}&score=${success_minute}`});
-        this.time = JSON.parse(JSON.stringify(DEFAULT_TIME));
-        this.$apply();
+        if (profile.now && profile.before_rank) wepy.navigateTo({url: `/pages/status?now=${profile.now}&before=${profile.before_rank}&score=${success_minute}`})
+        this.time = JSON.parse(JSON.stringify(DEFAULT_TIME))
+        const currentHour = this.time.hour < 10 ? `0${this.time.hour}` : this.time.hour
+        const currentMinute = this.time.minute < 10 ? `0${this.time.minute}` : this.time.minute
+        const currentSecond = this.time.second < 10 ? `0${this.time.second}` : this.time.second
+
+        this.excess = `${currentHour}:${currentMinute}:${currentSecond}`
+        this.$apply()
       }
     }
 
@@ -148,20 +147,20 @@
       let second = parseInt(time.second)
 
       if (second > 0) {
-        second--;
+        second--
       } else if (minute > 0) {
-        minute--;
-        second = 59;
+        minute--
+        second = 59
       } else if (hour > 0) {
-        hour--;
-        minute = 59;
-      } 
+        hour--
+        minute = 59
+      }
 
       const currentHour = hour < 10 ? `0${hour}` : hour
       const currentMinute = minute < 10 ? `0${minute}` : minute
       const currentSecond = second < 10 ? `0${second}` : second
 
-      excess = `${currentHour} : ${currentMinute} : ${currentSecond}`
+      excess = `${currentHour}:${currentMinute}:${currentSecond}`
 
       this.time = {
         hour,
