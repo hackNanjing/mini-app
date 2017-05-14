@@ -52,18 +52,13 @@
     flex-direction: column;
     justify-content: center;
 
-    .item {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      flex: 1;
-
-      .time-view {
+      .item {
         display: flex;
         flex-direction: row;
-        align-items: center;
-        height: 100rpx;
+        justify-content: space-between;
+        line-height: 1.8;
+        padding:15rpx 20rpx;
+        border-bottom: 1px solid #ddd;
 
         .m, .h {
           margin-left: 30rpx;
@@ -74,7 +69,6 @@
       .status {
         margin-right: 30rpx;
       }
-    }
 
     .line {
       background: #9b9b9b;
@@ -84,32 +78,25 @@
   }
 </style>
 <template>
-  <view class="container">
-    <view class="user-info">
-      <view><image class="image" mode="aspectFill" src="http://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eo12pYxS8icicRcEGqknlUoLZBDtSJKmjCGYxQQz0rYsC0vUV74dmOQPicVtmWk0oPVTLMicVy6vXExiaA/0"></image></view>
-      <view>用户名</view>
-    </view>
+  <view class="user-info">
+    <view><image class="image" mode="aspectFill" src="{{user.avatarUrl}}"></image></view>
+    <view>{{user.nickName}}</view>
+  </view>
 
-    <view class="info">
-      <view class="view">总分:{{profile.total}}</view>
-      <view class="view">排名:{{profile.rank}}</view>
-    </view>
+  <view class="info">
+    <view class="view">总分:{{profile.total}}</view>
+    <navigator url="./rank" open-type="redirect" class="view">排名:{{profile.rank}}</navigator>
+  </view>
 
-    <view class="history-title">
-      History
-    </view>
+  <view class="history-title">
+    History
+  </view>
 
-    <view class="history-list">
-      <view class="item" wx:for="{{history}}">
-        <view class="time-view">
-          <view class="m">{{item.success_total}}</view>
-          <view class="h">{{item.startAt}}-{{item.endAt}}</view>
-        </view>
-        <view class="status">
-          <icon type="success" size="20"/>
-        </view>
-        <view class="line"></view>
-      </view>
+  <view class="history-list">
+    <view class="item" wx:for="{{history}}" wx:key="{{item._id}}" >
+      <icon type="success" size="20"/>
+      <view class="h">time: {{item.startAt}}-{{item.endAt}}</view>
+      <view class="m">{{item.success_minute}}</view>
     </view>
   </view>
 </template>
@@ -128,7 +115,8 @@ export default class Index extends wepy.page {
       profile: {
         rank: 0,
         total: 0
-      }
+      },
+      user: {}
     }
 
     async onLoad() {
@@ -149,6 +137,7 @@ export default class Index extends wepy.page {
         }
       })
 
+      this.user = user
       this.history = history
       this.profile = profile
       this.$apply()

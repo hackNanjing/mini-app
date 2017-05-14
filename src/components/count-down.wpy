@@ -2,6 +2,7 @@
   .counter {
     text-align: center;
     font-size: 60px;
+    width: 270px;
     margin-bottom: 36px;
     z-index:9999;
   }
@@ -49,13 +50,10 @@
 
 <template>
   <view class="counter font-black" wx:if="{{!isStarted}}">
-    <text>{{time.hour}}:</text>
-    <text>{{time.minute}}:</text>
-    <text>{{time.second}}</text>
-    <picker mode="time" value="{{test}}" start="0:10" end="4:00" @change.stop="bindTimeChange">
-      <view class="picker">
-        当前选择: {{test}}
-      </view>
+    <picker mode="time" start="0:10" end="04:00" @change.stop="bindTimeChange">
+      <text>{{time.hour}}:</text>
+      <text>{{time.minute}}:</text>
+      <text>{{time.second}}</text>
     </picker>
   </view>
   <view class="mode-container" wx:if="{{isStarted}}">
@@ -88,7 +86,6 @@
       timeoutID: null,
       isStarted: false,
       excess: '00 : 00 : 00',
-      test: null
     }
 
     methods = {
@@ -98,13 +95,20 @@
         this.isStarted = true;
         this.countDown();
       },
-      bindTimeChange() {
-
+      bindTimeChange(event) {
+        console.log('detail:', event.detail);
+        let range = event.detail.value.split(':');
+        this.time = {
+          hour: range[0],
+          minute: range[1],
+          second: 0
+        }
+        console.log(event.detail, this.timeFormat);
       },
       async close() {
         this.isStarted = false;
-        clearTimeout(this.timeoutID);
         console.log('close test')
+        clearTimeout(this.timeoutID);
         const startAt = wx.getStorageSync('startAt');
         const total_minute = wx.getStorageSync('total_minute');
         let success_minute = total_minute - generateMinutes(this.time);
@@ -115,7 +119,7 @@
           success_minute
         };
         const user = await this.$wxapp.getUserInfo();
-        const { data: profile} = await wepy.request({
+        const { data: profile } = await wepy.request({
           url: `${BASE_URL}/v1/users/end`,
           method: 'POST',
           data: postData,
@@ -143,23 +147,17 @@
       let minute = parseInt(time.minute)
       let second = parseInt(time.second)
 
-      switch (true) {
-        case second > 0:
-          second--
-          break
+      if (second > 0) {
+        second--;
+      } else if (minute > 0) {
+        minute--;
+        second = 59;
+      } else if (hour > 0) {
+        hour--;
+        minute = 59;
+      } 
 
-        case minute > 0:
-          minute--
-          second = 59
-          break
-
-        case hour > 0:
-          hour--
-          minute = 59
-          break
-      }
-
-      const currentHour = hour < 10 ? `${hour}` : hour
+      const currentHour = hour < 10 ? `0${hour}` : hour
       const currentMinute = minute < 10 ? `0${minute}` : minute
       const currentSecond = second < 10 ? `0${second}` : second
 

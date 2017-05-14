@@ -1,0 +1,78 @@
+<style lang="less">
+.list{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+.item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+
+  .user-info {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 20rpx 40rpx;
+
+    .image {
+      height: 120rpx;
+      width: 120rpx;
+      border-radius: 50%;
+      margin-right: 20rpx;
+    }
+    .name {
+      font-size: 14px;
+      color: #fff;
+    }
+  }
+
+  .total {
+    margin-right: 30rpx;
+  }
+  border-bottom: 1px solid #9b9b9b;
+}
+}
+</style>
+<template>
+  <view class="list">
+    <view class="item" wx:for="{{ranks}}">
+      <view class="user-info">
+        <view><image class="image" mode="aspectFill" src="{{item.wechat.avatarUrl}}"></image></view>
+        <view>{{item.wechat.nickName}}</view>
+      </view>
+      <view class="total">总分:{{item.total}}</view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { BASE_URL } from '../constants'
+
+export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: 'Personal'
+    }
+
+    data = {
+      ranks: []
+    }
+
+    async onLoad() {
+      const user = await this.$wxapp.getUserInfo()
+      const {data: ranks} = await wepy.request({
+        method: 'GET',
+        url: `${BASE_URL}/v1/users/rank`,
+        header: {
+          auth: user.token
+        }
+      })
+
+      this.ranks = ranks
+      this.$apply()
+    }
+  }
+</script>
