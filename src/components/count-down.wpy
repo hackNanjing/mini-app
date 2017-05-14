@@ -26,37 +26,44 @@
     justify-content: center;
     border-radius: 4px;
   }
+  button {
+    border: none;
+    background-color: translate!important;
+  }
   .mode-container {
-    height: 100vh;
     width: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    height: 100vh;
+    z-index: 888;
+    position: relative;
+    background-color: rgba(0, 0, 0, 0.2);
+    overflow: hidden;
     
     .counter {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%,-50%); 
+      float: left;
+      margin-top: 50%;
+      margin-left: 50%;
+      transform: translate(-50%, -50%);
     }
 
      .close-button {
       width: 48rpx;
+      float: right;
       height: 48rpx;
-      position: fixed;
-      top: 36rpx;
-      right: 36rpx;
+      margin-top: 36rpx;
+      margin-right: 36rpx;
     }
   }
 </style>
 
 <template>
   <view class="counter font-black" wx:if="{{!isStarted}}">
-    <picker mode="time" start="0:10" end="04:00" @change.stop="bindTimeChange">
+    <picker mode="time" value="{{time}}" start="0:10" end="04:00" @change.stop="bindTimeChange">
       <text>{{time.hour}}:</text>
       <text>{{time.minute}}:</text>
       <text>{{time.second}}</text>
     </picker>
   </view>
-  <view class="mode-container" wx:if="{{isStarted}}">
+  <view class="mode-container" wx:if="{{isStarted}}" style="height: {{ clientHeight * 2}}rpx">
   <view @tap.stop="close"><image src="http://i1.piimg.com/588926/dfdeb88f1ac462a5.png" mode="scaleToFill" class="close-button" ></image></view>
     <view class="counter font-white">
       <text>{{time.hour}}:</text>
@@ -64,15 +71,18 @@
       <text>{{time.second}}</text>
     </view>
   </view>
-  <view class="action-button {{style}}" @tap.default="start" wx:if="{{!isStarted}}">
-    <text>Start</text>
-  </view>
+  
+  <form @submit="start" report-submit="true" wx:if="{{!isStarted}}">
+    <button formType="submit" class="action-button">Start</button>
+  </form>
 </template>
 
 <script>
   import wepy from 'wepy'
   import { BASE_URL } from '../constants'
   import { generateMinutes } from '../utils';
+  
+  const MOCK_ID = 'the formId is a mock one';
 
   const DEFAULT_TIME = {
     hour: 0,
@@ -86,17 +96,32 @@
       timeoutID: null,
       isStarted: false,
       excess: '00 : 00 : 00',
+      clientHeight: 0,
+      user: null
     }
 
+
     methods = {
-      start() {
+      async start(event) {
+        console.log('detail:', event.detail);
+        let id = event.detail.formId;
+        if (id !== MOCK_ID) {
+          console.log('something!')
+          await wepy.request({
+            url: `${BASE_URL}/v1/users/form-id`,
+            method: 'POST',
+            data: {id},
+            header: {
+              auth: this.user.token
+            }
+          })
+        }
         wepy.setStorage({ key: 'startAt', data: new Date().getTime() });
         wepy.setStorage({ key: 'total_minute', data: generateMinutes(this.time) });
         this.isStarted = true;
         this.countDown();
       },
       bindTimeChange(event) {
-        console.log('detail:', event.detail);
         let range = event.detail.value.split(':');
         this.time = {
           hour: range[0],
@@ -118,13 +143,12 @@
           total_minute,
           success_minute
         };
-        const user = await this.$wxapp.getUserInfo();
         const { data: profile } = await wepy.request({
           url: `${BASE_URL}/v1/users/end`,
           method: 'POST',
           data: postData,
           header: {
-            auth: user.token
+            auth: this.user.token
           }
         });
 
@@ -135,8 +159,11 @@
       }
     }
 
-    onLoad() {
-
+    async onLoad() {
+      let {screenHeight} = wx.getSystemInfoSync();
+      this.clientHeight = screenHeight;
+      console.log('screenHeight', screenHeight);
+      this.user = await this.$wxapp.getUserInfo();
     }
 
     countDown() {

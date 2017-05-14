@@ -37,11 +37,6 @@ export default class extends wepy.app {
          iconPath: 'images/home.png',
          selectedIconPath: 'images/home_checked.png',
          text: 'Home'
-       }, {
-         pagePath: 'pages/recommend',
-         iconPath: 'images/recommend.png',
-         selectedIconPath: 'images/recommend_checked.png',
-         text: 'Recommend',
        },{
          pagePath: 'pages/personal',
          iconPath: 'images/personal.png',

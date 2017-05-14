@@ -51,7 +51,7 @@
 
   export default class Index extends wepy.page {
     config = {
-      navigationBarTitleText: 'Status'
+      navigationBarTitleText: 'MobOut'
     }
 
     data = {
