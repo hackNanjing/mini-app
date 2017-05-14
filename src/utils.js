@@ -1,5 +1,5 @@
 
 export const generateMinutes = time => {
-  let { hour, minute } = time;
-  return hour * 60 + minute;
+  let { hour, minute, second } = time;
+  return hour * 60 * 60 + minute * 60 + second;
 };

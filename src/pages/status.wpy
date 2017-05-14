@@ -1,0 +1,70 @@
+<style lang="less">
+  .img-avator {
+      width: 320rpx;
+      height: 320rpx;
+  }
+  .success {
+      width: 480rpx;
+      text-align: center;
+  }
+  .title {
+      font-size: 72rpx;
+      line-height: 1.8;
+      color: #28d526;
+      display: block;
+  }
+  .danger {
+      color: #fe0000;
+  }
+  .subtitle {
+      font-size: 48rpx;
+      line-height: 1.4;
+      color: #666;
+      display:block;
+  }
+  .desc {
+      font-size: 36rpx;
+      line-height: 1.2;
+      color: #999;
+      display:block;
+  }
+</style>
+<template>
+  <view class="container">
+    <view class="success" wx:if="{{now > before}}">
+      <image src="https://i4.buimg.com/1949/536e26ca31abe9af.png" mode="scaleToFill" class="img-avator"></image>
+      <text class="title">Congratulations!</text>
+      <text class="subtitle">Score is {{score}} points</text>
+      <text class="desc">you have move up {{now - before}} steps among your friends</text>
+    </view>
+    <view class="success" wx:else>
+      <image src="https://i4.buimg.com/1949/9339f57d0d34c0cd.png" mode="scaleToFill" class="img-avator"></image>
+      <text class="title danger">Try Harder!</text>
+      <text class="subtitle">Score is {{score}} points</text>
+      <text class="desc" >you can do better to move up more steps!</text>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: 'Status'
+    }
+
+    data = {
+        now: null,
+        before: null,
+        score: null,
+        type: ''
+    }
+
+    onLoad(params) {
+        this.now = params.now;
+        this.before = params.before_rank;
+        this.score  = params.score;
+    }
+  }
+</script>

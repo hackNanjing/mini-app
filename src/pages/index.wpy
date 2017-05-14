@@ -33,9 +33,5 @@
     components = {
       countDown
     }
-
-    onLoad() {
-      console.log('onload')
-    }
   }
 </script>

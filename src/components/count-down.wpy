@@ -52,9 +52,14 @@
     <text>{{time.hour}}:</text>
     <text>{{time.minute}}:</text>
     <text>{{time.second}}</text>
+    <picker mode="time" value="{{test}}" start="0:10" end="4:00" @change.stop="bindTimeChange">
+      <view class="picker">
+        当前选择: {{test}}
+      </view>
+    </picker>
   </view>
   <view class="mode-container" wx:if="{{isStarted}}">
-    <image src="http://i1.piimg.com/588926/dfdeb88f1ac462a5.png" mode="scaleToFill" class="close-button" @tap.default="close"></image>
+  <view @tap.stop="close"><image src="http://i1.piimg.com/588926/dfdeb88f1ac462a5.png" mode="scaleToFill" class="close-button" ></image></view>
     <view class="counter font-white">
       <text>{{time.hour}}:</text>
       <text>{{time.minute}}:</text>
@@ -82,7 +87,8 @@
       time: JSON.parse(JSON.stringify(DEFAULT_TIME)),
       timeoutID: null,
       isStarted: false,
-      excess: '00 : 00 : 00'
+      excess: '00 : 00 : 00',
+      test: null
     }
 
     methods = {
@@ -92,19 +98,24 @@
         this.isStarted = true;
         this.countDown();
       },
+      bindTimeChange() {
+
+      },
       async close() {
         this.isStarted = false;
-        this.time = JSON.parse(JSON.stringify(DEFAULT_TIME));
         clearTimeout(this.timeoutID);
-        const startAt = wepy.getStorageSync('startAt');
-        const total_minute = wepy.getStorageSync('total_minute');
+        console.log('close test')
+        const startAt = wx.getStorageSync('startAt');
+        const total_minute = wx.getStorageSync('total_minute');
+        let success_minute = total_minute - generateMinutes(this.time);
+        console.log('success_minute', total_minute - generateMinutes(this.time))
         const postData = {
           startAt,
           total_minute,
-          success_minute: total_minute - generateMinutes(this.time)
+          success_minute
         };
         const user = await this.$wxapp.getUserInfo();
-        let { now, before_rank } = await wepy.request({
+        const { data: profile} = await wepy.request({
           url: `${BASE_URL}/v1/users/end`,
           method: 'POST',
           data: postData,
@@ -112,7 +123,10 @@
             auth: user.token
           }
         });
-        console.log(now, before_rank);
+
+        console.log('success_minute', success_minute, profile)
+        if (profile.now && profile.before_rank) wepy.navigateTo({url: `/pages/status?now=${profile.now}&before=${profile.before_rank}&score=${success_minute}`});
+        this.time = JSON.parse(JSON.stringify(DEFAULT_TIME));
         this.$apply();
       }
     }
