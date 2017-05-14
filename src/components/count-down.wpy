@@ -1,7 +1,7 @@
 <style lang="less">
   .counter {
     text-align: center;
-    font-size: 60px;
+    font-size: 54px;
     width: 270px;
     margin-bottom: 36px;
     z-index:9999;
@@ -13,7 +13,7 @@
     color: #333;
   }
   .count {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
   }
   .action-button {
@@ -57,18 +57,14 @@
 
 <template>
   <view class="counter font-black" wx:if="{{!isStarted}}">
-    <picker mode="time" value="{{time}}" start="0:10" end="04:00" @change.stop="bindTimeChange">
-      <text>{{time.hour}}:</text>
-      <text>{{time.minute}}:</text>
-      <text>{{time.second}}</text>
+    <picker mode="time" start="0:10" end="04:00" @change.stop="bindTimeChange">
+      <text>{{excess}}</text>
     </picker>
   </view>
   <view class="mode-container" wx:if="{{isStarted}}" style="height: {{ clientHeight * 2}}rpx">
   <view @tap.stop="close"><image src="http://i1.piimg.com/588926/dfdeb88f1ac462a5.png" mode="scaleToFill" class="close-button" ></image></view>
     <view class="counter font-white">
-      <text>{{time.hour}}:</text>
-      <text>{{time.minute}}:</text>
-      <text>{{time.second}}</text>
+      <text>{{excess}}</text>
     </view>
   </view>
   
@@ -84,7 +80,7 @@
   
   const MOCK_ID = 'the formId is a mock one';
 
-  const DEFAULT_TIME = {
+const DEFAULT_TIME = {
     hour: 0,
     minute: 30,
     second: 0
@@ -128,16 +124,13 @@
           minute: range[1],
           second: 0
         }
-        console.log(event.detail, this.timeFormat);
       },
       async close() {
-        this.isStarted = false;
-        console.log('close test')
-        clearTimeout(this.timeoutID);
-        const startAt = wx.getStorageSync('startAt');
-        const total_minute = wx.getStorageSync('total_minute');
-        let success_minute = total_minute - generateMinutes(this.time);
-        console.log('success_minute', total_minute - generateMinutes(this.time))
+        this.isStarted = false
+        clearTimeout(this.timeoutID)
+        const startAt = wx.getStorageSync('startAt')
+        const total_minute = wx.getStorageSync('total_minute')
+        let success_minute = total_minute - generateMinutes(this.time)
         const postData = {
           startAt,
           total_minute,
@@ -150,12 +143,16 @@
           header: {
             auth: this.user.token
           }
-        });
+        })
 
-        console.log('success_minute', success_minute, profile)
-        if (profile.now && profile.before_rank) wepy.navigateTo({url: `/pages/status?now=${profile.now}&before=${profile.before_rank}&score=${success_minute}`});
-        this.time = JSON.parse(JSON.stringify(DEFAULT_TIME));
-        this.$apply();
+        if (profile.now && profile.before_rank) wepy.navigateTo({url: `/pages/status?now=${profile.now}&before=${profile.before_rank}&score=${success_minute}`})
+        this.time = JSON.parse(JSON.stringify(DEFAULT_TIME))
+        const currentHour = this.time.hour < 10 ? `0${this.time.hour}` : this.time.hour
+        const currentMinute = this.time.minute < 10 ? `0${this.time.minute}` : this.time.minute
+        const currentSecond = this.time.second < 10 ? `0${this.time.second}` : this.time.second
+
+        this.excess = `${currentHour}:${currentMinute}:${currentSecond}`
+        this.$apply()
       }
     }
 
@@ -175,20 +172,20 @@
       let second = parseInt(time.second)
 
       if (second > 0) {
-        second--;
+        second--
       } else if (minute > 0) {
-        minute--;
-        second = 59;
+        minute--
+        second = 59
       } else if (hour > 0) {
-        hour--;
-        minute = 59;
-      } 
+        hour--
+        minute = 59
+      }
 
       const currentHour = hour < 10 ? `0${hour}` : hour
       const currentMinute = minute < 10 ? `0${minute}` : minute
       const currentSecond = second < 10 ? `0${second}` : second
 
-      excess = `${currentHour} : ${currentMinute} : ${currentSecond}`
+      excess = `${currentHour}:${currentMinute}:${currentSecond}`
 
       this.time = {
         hour,
